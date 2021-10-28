@@ -424,6 +424,9 @@ void Render()
 	pCommandList->ResourceBarrier(1, &barrierDesc);
 
 	pCommandList->SetPipelineState(pPipelineState);
+	pCommandList->SetGraphicsRootSignature(pRootSignature);
+	pCommandList->SetDescriptorHeaps(1, &pTextureDescHeap);
+	pCommandList->SetGraphicsRootDescriptorTable(0, pTextureDescHeap->GetGPUDescriptorHandleForHeapStart());
 
 	auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += bufferIndex * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -434,7 +437,6 @@ void Render()
 
 	pCommandList->RSSetViewports(1, &viewport);
 	pCommandList->RSSetScissorRects(1, &scissorRect);
-	pCommandList->SetGraphicsRootSignature(pRootSignature);
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	pCommandList->IASetIndexBuffer(&indexBufferView);
