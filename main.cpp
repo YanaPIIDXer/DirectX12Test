@@ -166,9 +166,12 @@ void Render()
 	if (pFence->GetCompletedValue() != fenceValue)
 	{
 		auto event = CreateEvent(nullptr, false, false, nullptr);
-		pFence->SetEventOnCompletion(fenceValue, event);
-		WaitForSingleObject(event, INFINITE);
-		CloseHandle(event);
+		if (event != nullptr)
+		{
+			pFence->SetEventOnCompletion(fenceValue, event);
+			WaitForSingleObject(event, INFINITE);
+			CloseHandle(event);
+		}
 	}
 
 	pCommandAllocator->Reset();
