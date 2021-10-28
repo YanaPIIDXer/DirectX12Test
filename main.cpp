@@ -23,6 +23,7 @@ ID3D12CommandAllocator* pCommandAllocator = nullptr;
 ID3D12GraphicsCommandList* pCommandList = nullptr;
 ID3D12CommandQueue* pCommandQueue = nullptr;
 IDXGISwapChain4* pSwapChain = nullptr;
+std::vector<ID3D12Resource*> buffers;
 ID3D12DescriptorHeap* pDescriptorHeap = nullptr;
 ID3D12Fence* pFence = nullptr;
 UINT64 fenceValue = 0;
@@ -48,7 +49,6 @@ ID3D12PipelineState* pPipelineState = nullptr;
 bool InitD3DX(HWND hWnd)
 {
 	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
-
 	for (auto level : featureLevels)
 	{
 		if (SUCCEEDED(D3D12CreateDevice(nullptr, level, IID_PPV_ARGS(&pDevice))))
@@ -130,13 +130,14 @@ bool InitD3DX(HWND hWnd)
 	{
 		DXGI_SWAP_CHAIN_DESC desc = {};
 		pSwapChain->GetDesc(&desc);
-		std::vector<ID3D12Resource*> buffers(desc.BufferCount);
+
+		buffers.resize(desc.BufferCount);
 		auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 		for (UINT i = 0; i < desc.BufferCount; i++)
 		{
 			pSwapChain->GetBuffer(i, IID_PPV_ARGS(&buffers[i]));
-			handle.ptr += i * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 			pDevice->CreateRenderTargetView(buffers[i], nullptr, handle);
+			handle.ptr += pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		}
 	}
 
@@ -243,7 +244,7 @@ bool InitD3DX(HWND hWnd)
 
 		if (FAILED(pDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pPipelineState))))
 		{
-			MSGBOX("GraphicsPipeline‚Ì¶¬‚ÉŽ¸”s‚µ‚Ü‚µ‚½", "Error");
+			MSGBOX("PipelineState‚Ì¶¬‚ÉŽ¸”s‚µ‚Ü‚µ‚½", "Error");
 			return false;
 		}
 	}
@@ -270,41 +271,42 @@ void Render()
 	//   pDevice‚ð‰Šú‰»‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚Å”»’è‚·‚é
 	if (pDevice == nullptr) { return; }
 
-	pCommandAllocator->Reset();
-	
 	auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
 	D3D12_RESOURCE_BARRIER barrierDesc = {};
 	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	ID3D12Resource* pBuffer = nullptr;
-	pSwapChain->GetBuffer(bufferIndex, IID_PPV_ARGS(&pBuffer));
-	barrierDesc.Transition.pResource = pBuffer;
-	barrierDesc.Transition.Subresource = 0;
+	barrierDesc.Transition.pResource = buffers[bufferIndex];
+	barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	pCommandList->ResourceBarrier(1, &barrierDesc);
 
+	pCommandList->SetPipelineState(pPipelineState);
+
 	auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += bufferIndex * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	pCommandList->OMSetRenderTargets(1, &handle, true, nullptr);
+	pCommandList->OMSetRenderTargets(1, &handle, false, nullptr);
 
 	float backgroundColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	pCommandList->ClearRenderTargetView(handle, backgroundColor, 0, nullptr);
 
-	pCommandList->SetPipelineState(pPipelineState);
-	pCommandList->SetGraphicsRootSignature(pRootSignature);
 	pCommandList->RSSetViewports(1, &viewport);
 	pCommandList->RSSetScissorRects(1, &scissorRect);
+	pCommandList->SetGraphicsRootSignature(pRootSignature);
 	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 	pCommandList->DrawInstanced(3, 1, 0, 0);
+
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	pCommandList->ResourceBarrier(1, &barrierDesc);
 
 	pCommandList->Close();
 
 	ID3D12CommandList* commandLists[] = { pCommandList };
 	pCommandQueue->ExecuteCommandLists(1, commandLists);
 
-	pCommandQueue->Signal(pFence, fenceValue);
+	pCommandQueue->Signal(pFence, ++fenceValue);
 	if (pFence->GetCompletedValue() != fenceValue)
 	{
 		auto event = CreateEvent(nullptr, false, false, nullptr);
@@ -320,10 +322,6 @@ void Render()
 	pCommandList->Reset(pCommandAllocator, nullptr);
 
 	pSwapChain->Present(1, 0);
-
-	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	pCommandList->ResourceBarrier(1, &barrierDesc);
 }
 
 // DirectX‚Ì‰ð•ú
