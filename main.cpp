@@ -3,8 +3,11 @@
 #include <tchar.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <DirectXMath.h>
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+
+using namespace DirectX;
 
 // 安全にRELEASE_SAFEease関数を実行するためのマクロ
 #define RELEASE_SAFE(p) if (p != nullptr) { p->Release(); p = nullptr; }
@@ -23,6 +26,13 @@ UINT64 fenceValue = 0;
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
+
+const XMFLOAT3 vertices[] = {
+	{ -1.0f, -1.0f, 0.0f },
+	{ -1.0f, 1.0f, 0.0f },
+	{ 1.0f, -1.0f, 0.0f }
+};
+ID3D12Resource* pVertexBuffer = nullptr;
 
 // DirectXの初期化
 bool InitD3DX(HWND hWnd)
@@ -126,6 +136,30 @@ bool InitD3DX(HWND hWnd)
 		return false;
 	}
 	
+	{
+		D3D12_HEAP_PROPERTIES heapProp = {};
+		heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
+		heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+
+		D3D12_RESOURCE_DESC desc = {};
+		desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		desc.Width = sizeof(vertices);
+		desc.Height = 1;
+		desc.DepthOrArraySize = 1;
+		desc.MipLevels = 1;
+		desc.Format = DXGI_FORMAT_UNKNOWN;
+		desc.SampleDesc.Count = 1;
+		desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+		desc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+		if (FAILED(pDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&pVertexBuffer))))
+		{
+			MSGBOX("VertexBufferの生成に失敗しました", "Error");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -187,6 +221,7 @@ void Render()
 // DirectXの解放
 void RELEASE_SAFEeaseD3DX()
 {
+	RELEASE_SAFE(pVertexBuffer);
 	RELEASE_SAFE(pFence);
 	RELEASE_SAFE(pDescriptorHeap);
 	RELEASE_SAFE(pSwapChain);
