@@ -6,6 +6,7 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 #include <string>
+#include <time.h>
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
@@ -58,6 +59,13 @@ ID3DBlob* pVertexShader = nullptr;
 ID3DBlob* pPixelShader = nullptr;
 ID3D12RootSignature* pRootSignature = nullptr;
 ID3D12PipelineState* pPipelineState = nullptr;
+
+struct PixelColor
+{
+	unsigned char R, G, B, A;
+};
+std::vector<PixelColor> texData(256 * 256);
+ID3D12Resource* pTextureBuffer = nullptr;
 
 // DirectXÇÃèâä˙âª
 bool InitD3DX(HWND hWnd)
@@ -308,6 +316,41 @@ bool InitD3DX(HWND hWnd)
 	scissorRect.right = scissorRect.left + WINDOW_WIDTH;
 	scissorRect.bottom = scissorRect.top + WINDOW_HEIGHT;
 
+	{
+		for (auto& color : texData)
+		{
+			color.R = rand() % 256;
+			color.G = rand() % 256;
+			color.B = rand() % 256;
+			color.A = 255;
+		}
+
+		D3D12_HEAP_PROPERTIES heapProp = {};
+		heapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
+		heapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
+		heapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
+		heapProp.CreationNodeMask = 0;
+		heapProp.VisibleNodeMask = 0;
+
+		D3D12_RESOURCE_DESC desc = {};
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.Width = 256;
+		desc.Height = 256;
+		desc.DepthOrArraySize = 1;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+		desc.MipLevels = 1;
+		desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		desc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		if (FAILED(pDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&pTextureBuffer))))
+		{
+			MSGBOX("TextureBufferÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -375,6 +418,7 @@ void Render()
 // DirectXÇÃâï˙
 void ReleaseD3DX()
 {
+	RELEASE_SAFE(pTextureBuffer);
 	RELEASE_SAFE(pPipelineState);
 	RELEASE_SAFE(pRootSignature);
 	RELEASE_SAFE(pPixelShader);
@@ -395,6 +439,7 @@ LRESULT WindowProc(HWND, UINT, WPARAM, LPARAM);
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
+	srand((unsigned int)time(nullptr));
 	const LPCWSTR className = L"DirectX12Test";
 
 	WNDCLASSEX w = {};
