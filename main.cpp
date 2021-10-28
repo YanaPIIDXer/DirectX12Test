@@ -41,6 +41,13 @@ const XMFLOAT3 vertices[] = {
 };
 ID3D12Resource* pVertexBuffer = nullptr;
 D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+
+const unsigned short indices[] = {
+	0, 1, 2, 2, 1, 3
+};
+ID3D12Resource* pIndexBuffer = nullptr;
+D3D12_INDEX_BUFFER_VIEW indexBufferView = {};
+
 ID3DBlob* pVertexShader = nullptr;
 ID3DBlob* pPixelShader = nullptr;
 ID3D12RootSignature* pRootSignature = nullptr;
@@ -197,6 +204,22 @@ bool InitD3DX(HWND hWnd)
 		vertexBufferView.BufferLocation = pVertexBuffer->GetGPUVirtualAddress();
 		vertexBufferView.SizeInBytes = sizeof(vertices);
 		vertexBufferView.StrideInBytes = sizeof(vertices[0]);
+
+		desc.Width = sizeof(indices);
+		if (FAILED(pDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&pIndexBuffer))))
+		{
+			MSGBOX("IndexBuffer‚Ì¶¬‚ÉŽ¸”s‚µ‚Ü‚µ‚½", "Error");
+			return false;
+		}
+
+		unsigned short* pIndexMap = nullptr;
+		pIndexBuffer->Map(0, nullptr, (void**)&pIndexMap);
+		std::copy(std::begin(indices), std::end(indices), pIndexMap);
+		pIndexBuffer->Unmap(0, nullptr);
+
+		indexBufferView.BufferLocation = pIndexBuffer->GetGPUVirtualAddress();
+		indexBufferView.Format = DXGI_FORMAT_R16_UINT;
+		indexBufferView.SizeInBytes = sizeof(indices);
 	}
 
 	if (FAILED(D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "BasicVS", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pVertexShader, nullptr)))
@@ -312,9 +335,10 @@ void Render()
 	pCommandList->RSSetViewports(1, &viewport);
 	pCommandList->RSSetScissorRects(1, &scissorRect);
 	pCommandList->SetGraphicsRootSignature(pRootSignature);
-	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	pCommandList->DrawInstanced(4, 1, 0, 0);
+	pCommandList->IASetIndexBuffer(&indexBufferView);
+	pCommandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -350,6 +374,7 @@ void ReleaseD3DX()
 	RELEASE_SAFE(pRootSignature);
 	RELEASE_SAFE(pPixelShader);
 	RELEASE_SAFE(pVertexShader);
+	RELEASE_SAFE(pIndexBuffer);
 	RELEASE_SAFE(pVertexBuffer);
 	RELEASE_SAFE(pFence);
 	RELEASE_SAFE(pDescriptorHeap);
