@@ -327,7 +327,7 @@ void Render()
 }
 
 // DirectX‚Ì‰ð•ú
-void RELEASE_SAFEeaseD3DX()
+void ReleaseD3DX()
 {
 	RELEASE_SAFE(pPipelineState);
 	RELEASE_SAFE(pRootSignature);
@@ -385,7 +385,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE hPrevInstance, 
 		}
 	}
 
-	RELEASE_SAFEeaseD3DX();
+	ReleaseD3DX();
 
 	UnregisterClass(className, w.hInstance);
 	return 0;
