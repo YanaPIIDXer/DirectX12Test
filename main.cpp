@@ -34,9 +34,10 @@ const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 
 const XMFLOAT3 vertices[] = {
-	{ -1.0f, -1.0f, 0.0f },
-	{ -1.0f, 1.0f, 0.0f },
-	{ 1.0f, -1.0f, 0.0f }
+	{ -0.4f, -0.7f, 0.0f },
+	{ -0.4f, 0.7f, 0.0f },
+	{ 0.4f, -0.7f, 0.0f },
+	{ 0.4f, 0.7f, 0.0f }
 };
 ID3D12Resource* pVertexBuffer = nullptr;
 D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
@@ -311,9 +312,9 @@ void Render()
 	pCommandList->RSSetViewports(1, &viewport);
 	pCommandList->RSSetScissorRects(1, &scissorRect);
 	pCommandList->SetGraphicsRootSignature(pRootSignature);
-	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	pCommandList->DrawInstanced(3, 1, 0, 0);
+	pCommandList->DrawInstanced(4, 1, 0, 0);
 
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
