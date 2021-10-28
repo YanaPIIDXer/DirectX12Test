@@ -18,6 +18,8 @@ ID3D12GraphicsCommandList* pCommandList = nullptr;
 ID3D12CommandQueue* pCommandQueue = nullptr;
 IDXGISwapChain4* pSwapChain = nullptr;
 ID3D12DescriptorHeap* pDescriptorHeap = nullptr;
+ID3D12Fence* pFence = nullptr;
+UINT64 fenceValue = 0;
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
@@ -118,6 +120,12 @@ bool InitD3DX(HWND hWnd)
 		}
 	}
 
+	if (FAILED(pDevice->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&pFence))))
+	{
+		MSGBOX("Fence‚Ì‰Šú‰»‚ÉŽ¸”s‚µ‚Ü‚µ‚½", "Error");
+		return false;
+	}
+	
 	return true;
 }
 
@@ -129,8 +137,19 @@ void Render()
 	if (pDevice == nullptr) { return; }
 
 	pCommandAllocator->Reset();
-
+	
 	auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
+	D3D12_RESOURCE_BARRIER barrierDesc = {};
+	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	ID3D12Resource* pBuffer = nullptr;
+	pSwapChain->GetBuffer(bufferIndex, IID_PPV_ARGS(&pBuffer));
+	barrierDesc.Transition.pResource = pBuffer;
+	barrierDesc.Transition.Subresource = 0;
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	pCommandList->ResourceBarrier(1, &barrierDesc);
+
 	auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	handle.ptr += bufferIndex * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	pCommandList->OMSetRenderTargets(1, &handle, true, nullptr);
@@ -143,15 +162,29 @@ void Render()
 	ID3D12CommandList* commandLists[] = { pCommandList };
 	pCommandQueue->ExecuteCommandLists(1, commandLists);
 
+	pCommandQueue->Signal(pFence, fenceValue);
+	if (pFence->GetCompletedValue() != fenceValue)
+	{
+		auto event = CreateEvent(nullptr, false, false, nullptr);
+		pFence->SetEventOnCompletion(fenceValue, event);
+		WaitForSingleObject(event, INFINITE);
+		CloseHandle(event);
+	}
+
 	pCommandAllocator->Reset();
 	pCommandList->Reset(pCommandAllocator, nullptr);
 
 	pSwapChain->Present(1, 0);
+
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	pCommandList->ResourceBarrier(1, &barrierDesc);
 }
 
 // DirectX‚Ì‰ð•ú
 void RELEASE_SAFEeaseD3DX()
 {
+	RELEASE_SAFE(pFence);
 	RELEASE_SAFE(pDescriptorHeap);
 	RELEASE_SAFE(pSwapChain);
 	RELEASE_SAFE(pCommandQueue);
