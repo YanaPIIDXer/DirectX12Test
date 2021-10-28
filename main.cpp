@@ -208,6 +208,7 @@ bool InitD3DX(HWND hWnd)
 				MSGBOX("RootSignatureÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩÅB", "Error");
 				return false;
 			}
+			RELEASE_SAFE(pBlob);
 		}
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
