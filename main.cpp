@@ -26,6 +26,8 @@ IDXGISwapChain4* pSwapChain = nullptr;
 ID3D12DescriptorHeap* pDescriptorHeap = nullptr;
 ID3D12Fence* pFence = nullptr;
 UINT64 fenceValue = 0;
+D3D12_VIEWPORT viewport = {};
+D3D12_RECT scissorRect = {};
 
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
@@ -245,6 +247,18 @@ bool InitD3DX(HWND hWnd)
 		}
 	}
 
+	viewport.Width = WINDOW_WIDTH;
+	viewport.Height = WINDOW_HEIGHT;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MaxDepth = 1.0f;
+	viewport.MinDepth = 0.0f;
+
+	scissorRect.top = 0;
+	scissorRect.left = 0;
+	scissorRect.right = scissorRect.left + WINDOW_WIDTH;
+	scissorRect.bottom = scissorRect.top + WINDOW_HEIGHT;
+
 	return true;
 }
 
@@ -275,6 +289,14 @@ void Render()
 
 	float backgroundColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	pCommandList->ClearRenderTargetView(handle, backgroundColor, 0, nullptr);
+
+	pCommandList->SetPipelineState(pPipelineState);
+	pCommandList->SetGraphicsRootSignature(pRootSignature);
+	pCommandList->RSSetViewports(1, &viewport);
+	pCommandList->RSSetScissorRects(1, &scissorRect);
+	pCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pCommandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	pCommandList->DrawInstanced(3, 1, 0, 0);
 
 	pCommandList->Close();
 
