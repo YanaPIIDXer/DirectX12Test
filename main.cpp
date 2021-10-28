@@ -268,10 +268,23 @@ bool InitD3DX(HWND hWnd)
 			rootParam.DescriptorTable.pDescriptorRanges = &range;
 			rootParam.DescriptorTable.NumDescriptorRanges = 1;
 
+			D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
+			samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+			samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
+			samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+			samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;
+			samplerDesc.MinLOD = 0.0f;
+			samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+
 			D3D12_ROOT_SIGNATURE_DESC desc = {};
 			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 			desc.pParameters = &rootParam;
 			desc.NumParameters = 1;
+			desc.pStaticSamplers = &samplerDesc;
+			desc.NumStaticSamplers = 1;
 
 			ID3DBlob* pBlob = nullptr;
 			if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &pBlob, nullptr)) ||
