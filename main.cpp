@@ -256,8 +256,23 @@ bool InitD3DX(HWND hWnd)
 		};
 
 		{
+			D3D12_DESCRIPTOR_RANGE range = {};
+			range.NumDescriptors = 1;
+			range.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+			range.BaseShaderRegister = 0;
+			range.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+			D3D12_ROOT_PARAMETER rootParam = {};
+			rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+			rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+			rootParam.DescriptorTable.pDescriptorRanges = &range;
+			rootParam.DescriptorTable.NumDescriptorRanges = 1;
+
 			D3D12_ROOT_SIGNATURE_DESC desc = {};
 			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			desc.pParameters = &rootParam;
+			desc.NumParameters = 1;
+
 			ID3DBlob* pBlob = nullptr;
 			if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &pBlob, nullptr)) ||
 				FAILED(pDevice->CreateRootSignature(0, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_PPV_ARGS(&pRootSignature))))
