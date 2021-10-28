@@ -39,6 +39,8 @@ ID3D12Resource* pVertexBuffer = nullptr;
 D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 ID3DBlob* pVertexShader = nullptr;
 ID3DBlob* pPixelShader = nullptr;
+ID3D12RootSignature* pRootSignature = nullptr;
+ID3D12PipelineState* pPipelineState = nullptr;
 
 // DirectXÇÃèâä˙âª
 bool InitD3DX(HWND hWnd)
@@ -187,6 +189,62 @@ bool InitD3DX(HWND hWnd)
 		return false;
 	}
 
+	{
+		D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+			{
+				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+			}
+		};
+
+		{
+			D3D12_ROOT_SIGNATURE_DESC desc = {};
+			desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+			ID3DBlob* pBlob = nullptr;
+			if (FAILED(D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1_0, &pBlob, nullptr)) ||
+				FAILED(pDevice->CreateRootSignature(0, pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_PPV_ARGS(&pRootSignature))))
+			{
+				MSGBOX("RootSignatureÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩÅB", "Error");
+				return false;
+			}
+		}
+
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC desc = {};
+		desc.pRootSignature = pRootSignature;
+		desc.VS.pShaderBytecode = pVertexShader->GetBufferPointer();
+		desc.VS.BytecodeLength = pVertexShader->GetBufferSize();
+		desc.PS.pShaderBytecode = pPixelShader->GetBufferPointer();
+		desc.PS.BytecodeLength = pPixelShader->GetBufferSize();
+		desc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+		desc.RasterizerState.MultisampleEnable = false;
+		desc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+		desc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
+		desc.RasterizerState.DepthClipEnable = true;
+		desc.BlendState.AlphaToCoverageEnable = false;
+		desc.BlendState.IndependentBlendEnable = false;
+
+		D3D12_RENDER_TARGET_BLEND_DESC blendDesc = {};
+		blendDesc.BlendEnable = false;
+		blendDesc.LogicOpEnable = false;
+		blendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+		desc.BlendState.RenderTarget[0] = blendDesc;
+		desc.InputLayout.pInputElementDescs = inputLayout;
+		desc.InputLayout.NumElements = _countof(inputLayout);
+
+		desc.IBStripCutValue = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+		desc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		desc.NumRenderTargets = 1;
+		desc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.SampleDesc.Count = 1;
+		desc.SampleDesc.Quality = 0;
+
+		if (FAILED(pDevice->CreateGraphicsPipelineState(&desc, IID_PPV_ARGS(&pPipelineState))))
+		{
+			MSGBOX("GraphicsPipelineÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -248,6 +306,8 @@ void Render()
 // DirectXÇÃâï˙
 void RELEASE_SAFEeaseD3DX()
 {
+	RELEASE_SAFE(pPipelineState);
+	RELEASE_SAFE(pRootSignature);
 	RELEASE_SAFE(pPixelShader);
 	RELEASE_SAFE(pVertexShader);
 	RELEASE_SAFE(pVertexBuffer);
