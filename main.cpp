@@ -56,14 +56,17 @@ bool InitD3DX(HWND hWnd)
 
 	std::vector <IDXGIAdapter*> adapters;
 	IDXGIAdapter* pUseAdapter = nullptr;
-	for (int i = 0; pDxgiFactory->EnumAdapters(i, &pUseAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+	for (int i = 0; pDxgiFactory->EnumAdapters(i, &pUseAdapter) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
 		adapters.push_back(pUseAdapter);
 	}
-	for (auto adpt : adapters) {
-		DXGI_ADAPTER_DESC adesc = {};
-		adpt->GetDesc(&adesc);
-		std::wstring strDesc = adesc.Description;
-		if (strDesc.find(L"NVIDIA") != std::string::npos) {
+	for (auto adpt : adapters)
+	{
+		DXGI_ADAPTER_DESC desc = {};
+		adpt->GetDesc(&desc);
+		std::wstring strDesc = desc.Description;
+		if (strDesc.find(L"NVIDIA") != std::string::npos)
+		{
 			pUseAdapter = adpt;
 			break;
 		}
