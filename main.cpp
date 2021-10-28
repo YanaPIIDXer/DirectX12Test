@@ -48,10 +48,31 @@ ID3D12PipelineState* pPipelineState = nullptr;
 // DirectXÇÃèâä˙âª
 bool InitD3DX(HWND hWnd)
 {
+	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory))))
+	{
+		MSGBOX("DXGIFactoryÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
+		return false;
+	}
+
+	std::vector <IDXGIAdapter*> adapters;
+	IDXGIAdapter* pUseAdapter = nullptr;
+	for (int i = 0; pDxgiFactory->EnumAdapters(i, &pUseAdapter) != DXGI_ERROR_NOT_FOUND; ++i) {
+		adapters.push_back(pUseAdapter);
+	}
+	for (auto adpt : adapters) {
+		DXGI_ADAPTER_DESC adesc = {};
+		adpt->GetDesc(&adesc);
+		std::wstring strDesc = adesc.Description;
+		if (strDesc.find(L"NVIDIA") != std::string::npos) {
+			pUseAdapter = adpt;
+			break;
+		}
+	}
+
 	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
 	for (auto level : featureLevels)
 	{
-		if (SUCCEEDED(D3D12CreateDevice(nullptr, level, IID_PPV_ARGS(&pDevice))))
+		if (SUCCEEDED(D3D12CreateDevice(pUseAdapter, level, IID_PPV_ARGS(&pDevice))))
 		{
 			break;
 		}
@@ -59,12 +80,6 @@ bool InitD3DX(HWND hWnd)
 	if (pDevice == nullptr)
 	{
 		MSGBOX("DeviceÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-		return false;
-	}
-
-	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory))))
-	{
-		MSGBOX("DXGIFactoryÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
 		return false;
 	}
 
