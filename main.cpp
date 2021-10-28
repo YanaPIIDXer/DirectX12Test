@@ -66,6 +66,7 @@ struct PixelColor
 };
 std::vector<PixelColor> texData(256 * 256);
 ID3D12Resource* pTextureBuffer = nullptr;
+ID3D12DescriptorHeap* pTextureDescHeap = nullptr;
 
 // DirectXÇÃèâä˙âª
 bool InitD3DX(HWND hWnd)
@@ -352,6 +353,19 @@ bool InitD3DX(HWND hWnd)
 		}
 	}
 
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+		desc.NodeMask = 0;
+		desc.NumDescriptors = 1;
+		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+		if (FAILED(pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pTextureDescHeap))))
+		{
+			MSGBOX("TextureDescHeapÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -419,6 +433,7 @@ void Render()
 // DirectXÇÃâï˙
 void ReleaseD3DX()
 {
+	RELEASE_SAFE(pTextureDescHeap);
 	RELEASE_SAFE(pTextureBuffer);
 	RELEASE_SAFE(pPipelineState);
 	RELEASE_SAFE(pRootSignature);
