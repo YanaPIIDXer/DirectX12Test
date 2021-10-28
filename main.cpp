@@ -344,7 +344,8 @@ bool InitD3DX(HWND hWnd)
 		desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		if (FAILED(pDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&pTextureBuffer))))
+		if (FAILED(pDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&pTextureBuffer))) ||
+			FAILED(pTextureBuffer->WriteToSubresource(0, nullptr, texData.data(), sizeof(PixelColor) * 256, sizeof(PixelColor) * texData.size())))
 		{
 			MSGBOX("TextureBufferÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
 			return false;
