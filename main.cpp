@@ -33,6 +33,7 @@ const XMFLOAT3 vertices[] = {
 	{ 1.0f, -1.0f, 0.0f }
 };
 ID3D12Resource* pVertexBuffer = nullptr;
+D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 
 // DirectX‚Ì‰Šú‰»
 bool InitD3DX(HWND hWnd)
@@ -158,6 +159,15 @@ bool InitD3DX(HWND hWnd)
 			MSGBOX("VertexBuffer‚Ì¶¬‚ÉŽ¸”s‚µ‚Ü‚µ‚½", "Error");
 			return false;
 		}
+
+		XMFLOAT3* pVertexMap = nullptr;
+		pVertexBuffer->Map(0, nullptr, (void**)&pVertexMap);
+		std::copy(std::begin(vertices), std::end(vertices), pVertexMap);
+		pVertexBuffer->Unmap(0, nullptr);
+
+		vertexBufferView.BufferLocation = pVertexBuffer->GetGPUVirtualAddress();
+		vertexBufferView.SizeInBytes = sizeof(vertices);
+		vertexBufferView.StrideInBytes = sizeof(vertices[0]);
 	}
 
 	return true;
