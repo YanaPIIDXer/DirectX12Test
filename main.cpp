@@ -33,11 +33,17 @@ D3D12_RECT scissorRect = {};
 const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 
-const XMFLOAT3 vertices[] = {
-	{ -0.4f, -0.7f, 0.0f },
-	{ -0.4f, 0.7f, 0.0f },
-	{ 0.4f, -0.7f, 0.0f },
-	{ 0.4f, 0.7f, 0.0f }
+struct Vertex
+{
+	XMFLOAT3 position;
+	XMFLOAT2 texCoord;
+};
+
+const Vertex vertices[] = {
+	{ { -0.4f, -0.7f, 0.0f }, { 0.0f, 1.0f } },
+	{ { -0.4f, 0.7f, 0.0f }, { 0.0f, 0.0f } },
+	{ { 0.4f, -0.7f, 0.0f }, { 1.0f, 1.0f } },
+	{ { 0.4f, 0.7f, 0.0f  }, { 1.0f, 0.0f } }
 };
 ID3D12Resource* pVertexBuffer = nullptr;
 D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
@@ -196,7 +202,7 @@ bool InitD3DX(HWND hWnd)
 			return false;
 		}
 
-		XMFLOAT3* pVertexMap = nullptr;
+		Vertex* pVertexMap = nullptr;
 		pVertexBuffer->Map(0, nullptr, (void**)&pVertexMap);
 		std::copy(std::begin(vertices), std::end(vertices), pVertexMap);
 		pVertexBuffer->Unmap(0, nullptr);
@@ -236,9 +242,8 @@ bool InitD3DX(HWND hWnd)
 
 	{
 		D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
-			{
-				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-			}
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 		};
 
 		{
