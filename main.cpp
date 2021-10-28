@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <vector>
+#include <tchar.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #pragma comment(lib, "d3d12.lib")
@@ -7,6 +8,8 @@
 
 // 安全にRELEASE_SAFEease関数を実行するためのマクロ
 #define RELEASE_SAFE(p) if (p != nullptr) { p->Release(); p = nullptr; }
+
+#define MSGBOX(text, caption) MessageBox(nullptr, _T(text), _T(caption), MB_OK)
 
 ID3D12Device* pDevice = nullptr;
 IDXGIFactory6* pDxgiFactory = nullptr;
@@ -20,12 +23,40 @@ const int WINDOW_WIDTH = 640;
 const int WINDOW_HEIGHT = 480;
 
 // DirectXの初期化
-void InitD3DX(HWND hWnd)
+bool InitD3DX(HWND hWnd)
 {
-	D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_12_1, IID_PPV_ARGS(&pDevice));
-	CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory));
-	pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&pCommandAllocator));
-	pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&pCommandList));
+	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
+
+	for (auto level : featureLevels)
+	{
+		if (SUCCEEDED(D3D12CreateDevice(nullptr, level, IID_PPV_ARGS(&pDevice))))
+		{
+			break;
+		}
+	}
+	if (pDevice == nullptr)
+	{
+		MSGBOX("Deviceの生成に失敗しました", "Error");
+		return false;
+	}
+
+	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory))))
+	{
+		MSGBOX("DXGIFactoryの生成に失敗しました", "Error");
+		return false;
+	}
+
+	if (FAILED(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&pCommandAllocator))))
+	{
+		MSGBOX("CommandAllocatorの生成に失敗しました", "Error");
+		return false;
+	}
+
+	if (FAILED(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&pCommandList))))
+	{
+		MSGBOX("CommandListの生成に失敗しました", "Error");
+		return false;
+	}
 
 	{
 		D3D12_COMMAND_QUEUE_DESC desc = {};
@@ -33,7 +64,11 @@ void InitD3DX(HWND hWnd)
 		desc.NodeMask = 0;
 		desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 		desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-		pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&pCommandQueue));
+		if (FAILED(pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&pCommandQueue))))
+		{
+			MSGBOX("CommandQueueの生成に失敗しました", "Error");
+			return false;
+		}
 	}
 
 	{
@@ -50,7 +85,11 @@ void InitD3DX(HWND hWnd)
 		desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 		desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
 		desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		pDxgiFactory->CreateSwapChainForHwnd(pCommandQueue, hWnd, &desc, nullptr, nullptr, (IDXGISwapChain1**)&pSwapChain);
+		if (FAILED(pDxgiFactory->CreateSwapChainForHwnd(pCommandQueue, hWnd, &desc, nullptr, nullptr, (IDXGISwapChain1**)&pSwapChain)))
+		{
+			MSGBOX("SwapChainの生成に失敗しました", "Error");
+			return false;
+		}
 	}
 
 	{
@@ -59,7 +98,11 @@ void InitD3DX(HWND hWnd)
 		desc.NodeMask = 0;
 		desc.NumDescriptors = 2;
 		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pDescriptorHeap));
+		if (FAILED(pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pDescriptorHeap))))
+		{
+			MSGBOX("DescriptorHeapの生成に失敗しました", "Error");
+			return false;
+		}
 	}
 
 	{
@@ -74,6 +117,36 @@ void InitD3DX(HWND hWnd)
 			pDevice->CreateRenderTargetView(buffers[i], nullptr, handle);
 		}
 	}
+
+	return true;
+}
+
+// 描画
+void Render()
+{
+	// ↓InitD3DXが呼ばれる前にWM_PAINTが発行される可能性があるので、
+	//   pDeviceを初期化しているかどうかで判定する
+	if (pDevice == nullptr) { return; }
+
+	pCommandAllocator->Reset();
+
+	auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
+	auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	handle.ptr += bufferIndex * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	pCommandList->OMSetRenderTargets(1, &handle, true, nullptr);
+
+	float backgroundColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	pCommandList->ClearRenderTargetView(handle, backgroundColor, 0, nullptr);
+
+	pCommandList->Close();
+
+	ID3D12CommandList* commandLists[] = { pCommandList };
+	pCommandQueue->ExecuteCommandLists(1, commandLists);
+
+	pCommandAllocator->Reset();
+	pCommandList->Reset(pCommandAllocator, nullptr);
+
+	pSwapChain->Present(1, 0);
 }
 
 // DirectXの解放
@@ -107,15 +180,25 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE hPrevInstance, 
 	HWND hWnd = CreateWindow(className, className, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, wrc.right - wrc.left, wrc.bottom - wrc.top, nullptr, nullptr, w.hInstance, nullptr);
 	ShowWindow(hWnd, SW_SHOW);
 
-	InitD3DX(hWnd);
-
 	MSG msg = {};
+
+	if (!InitD3DX(hWnd))
+	{
+		MSGBOX("DirectXの初期化に失敗しました", "Error");
+		// メインループに入らないようにして、解放処理が安全に行われるように
+		msg.message = WM_QUIT;
+	}
+
 	while (msg.message != WM_QUIT)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+		}
+		else
+		{
+			Render();
 		}
 	}
 
@@ -132,6 +215,10 @@ LRESULT WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_DESTROY:
 
 			PostQuitMessage(0);
+			break;
+
+		case WM_PAINT:
+			Render();
 			break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
