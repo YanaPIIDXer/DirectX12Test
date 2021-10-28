@@ -4,8 +4,11 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <DirectXMath.h>
+#include <d3dcompiler.h>
+#include <string>
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 using namespace DirectX;
 
@@ -34,6 +37,8 @@ const XMFLOAT3 vertices[] = {
 };
 ID3D12Resource* pVertexBuffer = nullptr;
 D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
+ID3DBlob* pVertexShader = nullptr;
+ID3DBlob* pPixelShader = nullptr;
 
 // DirectXの初期化
 bool InitD3DX(HWND hWnd)
@@ -170,6 +175,18 @@ bool InitD3DX(HWND hWnd)
 		vertexBufferView.StrideInBytes = sizeof(vertices[0]);
 	}
 
+	if (FAILED(D3DCompileFromFile(L"VertexShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "BasicVS", "vs_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pVertexShader, nullptr)))
+	{
+		MSGBOX("VertexShaderのコンパイルに失敗しました", "Error");
+		return false;
+	}
+
+	if (FAILED(D3DCompileFromFile(L"PixelShader.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "BasicPS", "ps_5_0", D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION, 0, &pPixelShader, nullptr)))
+	{
+		MSGBOX("PixelShaderのコンパイルに失敗しました", "Error");
+		return false;
+	}
+
 	return true;
 }
 
@@ -231,6 +248,8 @@ void Render()
 // DirectXの解放
 void RELEASE_SAFEeaseD3DX()
 {
+	RELEASE_SAFE(pPixelShader);
+	RELEASE_SAFE(pVertexShader);
 	RELEASE_SAFE(pVertexBuffer);
 	RELEASE_SAFE(pFence);
 	RELEASE_SAFE(pDescriptorHeap);
