@@ -13,10 +13,13 @@ class Actor
 {
 public:
 	// コンストラクタ
-	Actor(ID3D12Device* pDevice, Scene *pInScene);
+	Actor(Scene *pInScene);
 
 	// デストラクタ
 	virtual ~Actor() = 0;
+
+	// 初期化
+	virtual void Initialize(ID3D12Device* pDevice) {}
 
 	// 更新
 	void Update();
