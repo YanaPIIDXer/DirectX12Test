@@ -5,6 +5,7 @@
 #include <memory>
 #include "Component.h"
 
+class ID3D12Device;
 class Scene;
 
 // アクタークラス
@@ -12,7 +13,7 @@ class Actor
 {
 public:
 	// コンストラクタ
-	Actor(Scene *pInScene);
+	Actor(ID3D12Device* pDevice, Scene *pInScene);
 
 	// デストラクタ
 	virtual ~Actor() = 0;

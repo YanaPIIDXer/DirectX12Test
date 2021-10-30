@@ -21,9 +21,6 @@ public:
 	// 解放
 	void Release();
 
-	// デバイスを取得
-	ID3D12Device* GetDevice() { return pDevice; }
-
 	// 毎フレームの処理
 	void Tick();
 

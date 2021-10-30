@@ -2,7 +2,7 @@
 #include "Scene.h"
 
 // コンストラクタ
-Actor::Actor(Scene* pInScene)
+Actor::Actor(ID3D12Device* pDevice, Scene* pInScene)
 	: pScene(pInScene)
 {
 	pScene->AddActor(this);
