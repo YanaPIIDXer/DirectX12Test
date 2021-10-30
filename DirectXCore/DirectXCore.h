@@ -38,6 +38,8 @@ private:
 	ID3D12DescriptorHeap* pDescriptorHeap;
 	ID3D12Fence* pFence;
 	UINT64 fenceValue;
+	D3D12_VIEWPORT viewport;
+	D3D12_RECT scissorRect;
 
 	// èâä˙âª
 	bool init(HWND hWnd, int windowWidth, int windowHeight);

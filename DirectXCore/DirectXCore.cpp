@@ -18,6 +18,8 @@ DirectXCore::DirectXCore()
 	, pDescriptorHeap(nullptr)
 	, pFence(nullptr)
 	, fenceValue(0)
+	, viewport({})
+	, scissorRect({})
 {
 }
 
@@ -182,6 +184,19 @@ bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight)
 		return false;
 	}
 
+
+	viewport.Width = (float)windowWidth;
+	viewport.Height = (float)windowHeight;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MaxDepth = 1.0f;
+	viewport.MinDepth = 0.0f;
+
+	scissorRect.top = 0;
+	scissorRect.left = 0;
+	scissorRect.right = scissorRect.left + windowWidth;
+	scissorRect.bottom = scissorRect.top + windowHeight;
+
 	return true;
 }
 
@@ -208,6 +223,11 @@ void DirectXCore::Render()
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	pCommandList->ResourceBarrier(1, &barrierDesc);
+
+	pCommandList->RSSetViewports(1, &viewport);
+	pCommandList->RSSetScissorRects(1, &scissorRect);
+
+	// TODO:ƒV[ƒ“‚Ì•`‰æˆ—
 
 	pCommandList->Close();
 
