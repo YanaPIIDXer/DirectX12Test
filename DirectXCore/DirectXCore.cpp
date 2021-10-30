@@ -55,55 +55,10 @@ void DirectXCore::Release()
 	RELEASE_SAFE(pDevice);
 }
 
-// 描画
-void DirectXCore::Render()
+// 毎フレームの処理
+void DirectXCore::Tick()
 {
-	// ↓InitD3DXが呼ばれる前にWM_PAINTが発行される可能性があるので、
-	//   pDeviceを初期化しているかどうかで判定する
-	if (pDevice == nullptr) { return; }
-
-	auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
-	D3D12_RESOURCE_BARRIER barrierDesc = {};
-	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	barrierDesc.Transition.pResource = buffers[bufferIndex];
-	barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	pCommandList->ResourceBarrier(1, &barrierDesc);
-
-	auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	handle.ptr += bufferIndex * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	pCommandList->OMSetRenderTargets(1, &handle, false, nullptr);
-
-	float backgroundColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	pCommandList->ClearRenderTargetView(handle, backgroundColor, 0, nullptr);
-
-	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	pCommandList->ResourceBarrier(1, &barrierDesc);
-
-	pCommandList->Close();
-
-	ID3D12CommandList* commandLists[] = { pCommandList };
-	pCommandQueue->ExecuteCommandLists(1, commandLists);
-
-	pCommandQueue->Signal(pFence, ++fenceValue);
-	if (pFence->GetCompletedValue() != fenceValue)
-	{
-		auto event = CreateEvent(nullptr, false, false, nullptr);
-		if (event != nullptr)
-		{
-			pFence->SetEventOnCompletion(fenceValue, event);
-			WaitForSingleObject(event, INFINITE);
-			CloseHandle(event);
-		}
-	}
-
-	pCommandAllocator->Reset();
-	pCommandList->Reset(pCommandAllocator, nullptr);
-
-	pSwapChain->Present(1, 0);
+	Render();
 }
 
 
@@ -228,4 +183,51 @@ bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight)
 	}
 
 	return true;
+}
+
+// 描画
+void DirectXCore::Render()
+{
+	auto bufferIndex = pSwapChain->GetCurrentBackBufferIndex();
+	D3D12_RESOURCE_BARRIER barrierDesc = {};
+	barrierDesc.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	barrierDesc.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	barrierDesc.Transition.pResource = buffers[bufferIndex];
+	barrierDesc.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	pCommandList->ResourceBarrier(1, &barrierDesc);
+
+	auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	handle.ptr += bufferIndex * pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	pCommandList->OMSetRenderTargets(1, &handle, false, nullptr);
+
+	float backgroundColor[] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	pCommandList->ClearRenderTargetView(handle, backgroundColor, 0, nullptr);
+
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	pCommandList->ResourceBarrier(1, &barrierDesc);
+
+	pCommandList->Close();
+
+	ID3D12CommandList* commandLists[] = { pCommandList };
+	pCommandQueue->ExecuteCommandLists(1, commandLists);
+
+	pCommandQueue->Signal(pFence, ++fenceValue);
+	if (pFence->GetCompletedValue() != fenceValue)
+	{
+		auto event = CreateEvent(nullptr, false, false, nullptr);
+		if (event != nullptr)
+		{
+			pFence->SetEventOnCompletion(fenceValue, event);
+			WaitForSingleObject(event, INFINITE);
+			CloseHandle(event);
+		}
+	}
+
+	pCommandAllocator->Reset();
+	pCommandList->Reset(pCommandAllocator, nullptr);
+
+	pSwapChain->Present(1, 0);
 }

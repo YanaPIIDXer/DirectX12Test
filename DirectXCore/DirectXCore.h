@@ -24,8 +24,8 @@ public:
 	// デバイスを取得
 	ID3D12Device* GetDevice() { return pDevice; }
 
-	// 描画
-	void Render();
+	// 毎フレームの処理
+	void Tick();
 
 private:
 	ID3D12Device* pDevice;
@@ -41,6 +41,9 @@ private:
 
 	// 初期化
 	bool init(HWND hWnd, int windowWidth, int windowHeight);
+
+	// 描画
+	void Render();
 };
 
 #endif		// #ifndef DIRECTXCORE_H
