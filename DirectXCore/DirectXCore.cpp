@@ -24,6 +24,7 @@ DirectXCore::DirectXCore()
 // デストラクタ
 DirectXCore::~DirectXCore()
 {
+	Release();
 }
 
 // 初期化
