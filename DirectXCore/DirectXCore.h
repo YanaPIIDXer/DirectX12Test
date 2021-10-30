@@ -24,6 +24,9 @@ public:
 	// デバイスを取得
 	ID3D12Device* GetDevice() { return pDevice; }
 
+	// 描画
+	void Render();
+
 private:
 	ID3D12Device* pDevice;
 	IDXGIFactory6* pDxgiFactory;

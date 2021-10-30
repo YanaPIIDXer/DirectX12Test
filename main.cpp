@@ -9,6 +9,8 @@
 #include <time.h>
 #include <DirectXTex.h>
 
+#include "DirectXCore/DirectXCore.h"
+
 // 安全にRELEASE_SAFEease関数を実行するためのマクロ
 #define RELEASE_SAFE(p) if (p != nullptr) { p->Release(); p = nullptr; }
 
@@ -55,6 +57,7 @@ ID3D12DescriptorHeap* pTextureDescHeap = nullptr;
 // DirectXの初期化
 bool InitD3DX(HWND hWnd)
 {	
+	/*
 	{
 		D3D12_HEAP_PROPERTIES heapProp = {};
 		heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -271,13 +274,14 @@ bool InitD3DX(HWND hWnd)
 		desc.Texture2D.MipLevels = 1;
 
 		pDevice->CreateShaderResourceView(pTextureBuffer, &desc, pTextureDescHeap->GetCPUDescriptorHandleForHeapStart());
-	}
+	}*/
 	return true;
 }
 
 // 描画
 void Render()
 {
+	/*
 	// ↓InitD3DXが呼ばれる前にWM_PAINTが発行される可能性があるので、
 	//   pDeviceを初期化しているかどうかで判定する
 	if (pDevice == nullptr) { return; }
@@ -336,6 +340,7 @@ void Render()
 	pCommandList->Reset(pCommandAllocator, nullptr);
 
 	pSwapChain->Present(1, 0);
+	*/
 }
 
 // DirectXの解放
@@ -373,7 +378,8 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE hPrevInstance, 
 
 	MSG msg = {};
 
-	if (!InitD3DX(hWnd))
+	DirectXCore core;
+	if (!core.Initialize(hWnd, WINDOW_WIDTH, WINDOW_HEIGHT))
 	{
 		MSGBOX("DirectXの初期化に失敗しました", "Error");
 		// メインループに入らないようにして、解放処理が安全に行われるように
@@ -389,7 +395,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE hPrevInstance, 
 		}
 		else
 		{
-			Render();
+			core.Render();
 		}
 	}
 
@@ -406,10 +412,6 @@ LRESULT WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_DESTROY:
 
 			PostQuitMessage(0);
-			break;
-
-		case WM_PAINT:
-			Render();
 			break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
