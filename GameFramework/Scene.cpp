@@ -1,5 +1,5 @@
 #include "Scene.h"
-#include "Renderable.h"
+#include "Actor.h"
 
 // コンストラクタ
 Scene::Scene()
@@ -17,11 +17,20 @@ void Scene::Tick()
 	Update();
 }
 
+// アクターを削除
+void Scene::RemoveActor(Actor *pActor)
+{
+	for (auto it = actors.begin(); it != actors.end(); ++it)
+	{
+		if (it->get() == pActor)
+		{
+			actors.erase(it);
+			return;
+		}
+	}
+}
+
 // 描画
 void Scene::Render(ID3D12GraphicsCommandList* pCommandList)
 {
-	for (auto* pRenderComponent : renderComponents)
-	{
-		pRenderComponent->Render(pCommandList);
-	}
 }

@@ -8,10 +8,15 @@ class Actor
 {
 public:
 	// コンストラクタ
-	Actor(Scene *pScene);
+	Actor(Scene *pInScene);
 
 	// デストラクタ
 	virtual ~Actor() = 0;
+
+private:
+
+	// シーン
+	Scene* pScene;
 };
 
 #endif		// #ifndef ACTOR_H

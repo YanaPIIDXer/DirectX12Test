@@ -1,12 +1,15 @@
 #include "Actor.h"
-#include "../DirectXCore/Scene.h"
+#include "Scene.h"
 
 // コンストラクタ
-Actor::Actor(Scene* pScene)
+Actor::Actor(Scene* pInScene)
+	: pScene(pInScene)
 {
+	pScene->AddActor(this);
 }
 
 // デストラクタ
 Actor::~Actor()
 {
+	pScene->RemoveActor(this);
 }

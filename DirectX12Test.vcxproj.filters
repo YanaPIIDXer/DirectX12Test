@@ -44,9 +44,6 @@
     <ClInclude Include="GameFramework\Scene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameFramework\Renderable.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameFramework\Actor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>

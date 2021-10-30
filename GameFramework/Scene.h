@@ -2,7 +2,9 @@
 #define SCENE_H
 
 #include <vector>
-class IRenderable;
+#include <memory>
+
+class Actor;
 class ID3D12GraphicsCommandList;
 
 // シーン基底クラス
@@ -22,11 +24,14 @@ public:
 	// 描画
 	void Render(ID3D12GraphicsCommandList *pCommandList);
 
-	// 描画用Componentを追加
-	void AddRenderComponent(IRenderable* pRenderableComponent)
+	// アクターを追加
+	void AddActor(Actor* pActor)
 	{
-		renderComponents.push_back(pRenderableComponent);
+		actors.push_back(std::shared_ptr<Actor>(pActor));
 	}
+
+	// アクターを消去
+	void RemoveActor(Actor* pActor);
 
 protected:
 
@@ -35,8 +40,8 @@ protected:
 
 private:
 
-	// 描画Componentリスト
-	std::vector<IRenderable*> renderComponents;
+	// アクターリスト
+	std::vector<std::shared_ptr<Actor>> actors;
 };
 
 #endif	// #ifndef SCENE_H

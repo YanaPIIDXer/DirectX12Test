@@ -171,7 +171,6 @@
   <ItemGroup>
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="DirectXCore\DirectXCore.h" />
-    <ClInclude Include="GameFramework\Renderable.h" />
     <ClInclude Include="GameFramework\Scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
