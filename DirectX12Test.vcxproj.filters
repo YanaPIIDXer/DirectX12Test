@@ -23,4 +23,9 @@
     <FxCompile Include="VertexShader.hlsl" />
     <FxCompile Include="PixelShader.hlsl" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="imgs\Anpan.jpg">
+      <Filter>リソース ファイル</Filter>
+    </Image>
+  </ItemGroup>
 </Project>
