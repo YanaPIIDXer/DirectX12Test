@@ -34,7 +34,7 @@ DirectXCore::~DirectXCore()
 // èâä˙âª
 bool DirectXCore::Initialize(HWND hWnd, int windowWidth, int windowHeight, Scene* pInitialScene)
 {
-	if (!init(hWnd, windowWidth, windowHeight))
+	if (!init(hWnd, windowWidth, windowHeight, pInitialScene))
 	{
 		Release();
 		return false;
@@ -68,7 +68,7 @@ void DirectXCore::Tick()
 
 
 // èâä˙âª
-bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight)
+bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight, Scene* pInitialScene)
 {
 	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory))))
 	{
@@ -187,7 +187,6 @@ bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight)
 		return false;
 	}
 
-
 	viewport.Width = (float)windowWidth;
 	viewport.Height = (float)windowHeight;
 	viewport.TopLeftX = 0;
@@ -199,6 +198,8 @@ bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight)
 	scissorRect.left = 0;
 	scissorRect.right = scissorRect.left + windowWidth;
 	scissorRect.bottom = scissorRect.top + windowHeight;
+
+	pCurrentScene.reset(pInitialScene);
 
 	return true;
 }

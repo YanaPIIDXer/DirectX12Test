@@ -149,6 +149,7 @@
     <ClCompile Include="GameFramework\Scene.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Components\TextureComponent.cpp" />
+    <ClCompile Include="Scenes\TextureScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="PixelShader.hlsl">
@@ -178,6 +179,7 @@
     <ClInclude Include="GameFramework\RenderComponent.h" />
     <ClInclude Include="GameFramework\Scene.h" />
     <ClInclude Include="Components\TextureComponent.h" />
+    <ClInclude Include="Scenes\TextureScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

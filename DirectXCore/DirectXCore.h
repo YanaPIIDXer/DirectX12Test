@@ -43,7 +43,7 @@ private:
 	std::shared_ptr<Scene> pCurrentScene;
 
 	// ‰Šú‰»
-	bool init(HWND hWnd, int windowWidth, int windowHeight);
+	bool init(HWND hWnd, int windowWidth, int windowHeight, Scene* pInitialScene);
 
 	// •`‰æ
 	void Render();
