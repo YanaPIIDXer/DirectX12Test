@@ -35,6 +35,9 @@ protected:
 	// 更新
 	virtual void Tick() {}
 
+	// シーン取得
+	Scene* GetScene() const { return pScene; }
+
 private:
 
 	// シーン

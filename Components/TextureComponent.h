@@ -26,6 +26,10 @@ public:
 
 	// テクスチャ読み込み
 	bool LoadTexture(ID3D12Device* pDevice, const wchar_t *pFilePath);
+	
+	// 更新
+	// 何もしない
+	virtual void Update() override {}
 
 	// 描画
 	virtual void Render(ID3D12GraphicsCommandList* pCommandList) override;
