@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Actor.h"
 
 // コンストラクタ
 Scene::Scene()
