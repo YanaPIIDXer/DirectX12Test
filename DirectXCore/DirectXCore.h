@@ -3,6 +3,9 @@
 
 #include <d3dx12.h>
 #include <dxgi1_6.h>
+#include <memory>
+
+class Scene;
 
 // DirectX‚ÌƒRƒA•”•ª
 class DirectXCore
@@ -16,7 +19,7 @@ public:
 	~DirectXCore();
 
 	// ‰Šú‰»
-	bool Initialize(HWND hWnd, int windowWidth, int windowHeight);
+	bool Initialize(HWND hWnd, int windowWidth, int windowHeight, Scene* pInitialScene);
 
 	// ‰ğ•ú
 	void Release();
@@ -37,6 +40,7 @@ private:
 	UINT64 fenceValue;
 	D3D12_VIEWPORT viewport;
 	D3D12_RECT scissorRect;
+	std::shared_ptr<Scene> pCurrentScene;
 
 	// ‰Šú‰»
 	bool init(HWND hWnd, int windowWidth, int windowHeight);

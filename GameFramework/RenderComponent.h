@@ -4,7 +4,7 @@
 #include "Component.h"
 
 class Scene;
-class ID3D12GraphicsCommandList;
+struct ID3D12GraphicsCommandList;
 
 // •`‰æComponent
 class RenderComponent : public Component

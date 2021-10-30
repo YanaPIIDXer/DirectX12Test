@@ -5,7 +5,7 @@
 #include <memory>
 #include "Actor.h"
 
-class ID3D12GraphicsCommandList;
+struct ID3D12GraphicsCommandList;
 class RenderComponent;
 
 // シーン基底クラス

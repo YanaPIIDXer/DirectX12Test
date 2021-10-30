@@ -119,7 +119,7 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_  HINSTANCE hPrevInstance, 
 	MSG msg = {};
 
 	DirectXCore core;
-	if (!core.Initialize(hWnd, WINDOW_WIDTH, WINDOW_HEIGHT))
+	if (!core.Initialize(hWnd, WINDOW_WIDTH, WINDOW_HEIGHT, nullptr))
 	{
 		MSGBOX("DirectXの初期化に失敗しました", "Error");
 		// メインループに入らないようにして、解放処理が安全に行われるように

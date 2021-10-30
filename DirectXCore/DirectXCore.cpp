@@ -1,5 +1,6 @@
 #include "DirectXCore.h"
 #include <tchar.h>
+#include "../GameFramework/Scene.h"
 
 // 安全にRELEASE_SAFEease関数を実行するためのマクロ
 #define RELEASE_SAFE(p) if (p != nullptr) { p->Release(); p = nullptr; }
@@ -20,6 +21,7 @@ DirectXCore::DirectXCore()
 	, fenceValue(0)
 	, viewport({})
 	, scissorRect({})
+	, pCurrentScene()
 {
 }
 
@@ -30,7 +32,7 @@ DirectXCore::~DirectXCore()
 }
 
 // 初期化
-bool DirectXCore::Initialize(HWND hWnd, int windowWidth, int windowHeight)
+bool DirectXCore::Initialize(HWND hWnd, int windowWidth, int windowHeight, Scene* pInitialScene)
 {
 	if (!init(hWnd, windowWidth, windowHeight))
 	{
@@ -61,6 +63,7 @@ void DirectXCore::Release()
 void DirectXCore::Tick()
 {
 	Render();
+	pCurrentScene->Tick();
 }
 
 
@@ -227,7 +230,7 @@ void DirectXCore::Render()
 	pCommandList->RSSetViewports(1, &viewport);
 	pCommandList->RSSetScissorRects(1, &scissorRect);
 
-	// TODO:シーンの描画処理
+	pCurrentScene->Render(pCommandList);
 
 	pCommandList->Close();
 
