@@ -4,6 +4,7 @@
 #include "Component.h"
 
 class Scene;
+class ID3D12GraphicsCommandList;
 
 // •`‰æComponent
 class RenderComponent : public Component
@@ -17,7 +18,7 @@ public:
 	virtual ~RenderComponent() = 0;
 
 	// •`‰æ
-	virtual void Render() = 0;
+	virtual void Render(ID3D12GraphicsCommandList* pCommandList) = 0;
 
 private:
 

@@ -1,4 +1,5 @@
 #include "Scene.h"
+#include "RenderComponent.h"
 
 // コンストラクタ
 Scene::Scene()
@@ -35,4 +36,8 @@ void Scene::RemoveActor(Actor *pActor)
 // 描画
 void Scene::Render(ID3D12GraphicsCommandList* pCommandList)
 {
+	for (auto* pComponent : renderComponents)
+	{
+		pComponent->Render(pCommandList);
+	}
 }
