@@ -9,23 +9,14 @@
 #include <time.h>
 #include <DirectXTex.h>
 
-using namespace DirectX;
-
 // à¿ëSÇ…RELEASE_SAFEeaseä÷êîÇé¿çsÇ∑ÇÈÇΩÇﬂÇÃÉ}ÉNÉç
 #define RELEASE_SAFE(p) if (p != nullptr) { p->Release(); p = nullptr; }
 
+// ÉÅÉbÉZÅ[ÉWÉ{ÉbÉNÉX
 #define MSGBOX(text, caption) MessageBox(nullptr, _T(text), _T(caption), MB_OK)
 
-ID3D12Device* pDevice = nullptr;
-IDXGIFactory6* pDxgiFactory = nullptr;
-ID3D12CommandAllocator* pCommandAllocator = nullptr;
-ID3D12GraphicsCommandList* pCommandList = nullptr;
-ID3D12CommandQueue* pCommandQueue = nullptr;
-IDXGISwapChain4* pSwapChain = nullptr;
-std::vector<ID3D12Resource*> buffers;
-ID3D12DescriptorHeap* pDescriptorHeap = nullptr;
-ID3D12Fence* pFence = nullptr;
-UINT64 fenceValue = 0;
+using namespace DirectX;
+
 D3D12_VIEWPORT viewport = {};
 D3D12_RECT scissorRect = {};
 
@@ -63,124 +54,7 @@ ID3D12DescriptorHeap* pTextureDescHeap = nullptr;
 
 // DirectXÇÃèâä˙âª
 bool InitD3DX(HWND hWnd)
-{
-	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory))))
-	{
-		MSGBOX("DXGIFactoryÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-		return false;
-	}
-
-	std::vector <IDXGIAdapter*> adapters;
-	IDXGIAdapter* pUseAdapter = nullptr;
-	for (int i = 0; pDxgiFactory->EnumAdapters(i, &pUseAdapter) != DXGI_ERROR_NOT_FOUND; ++i)
-	{
-		adapters.push_back(pUseAdapter);
-	}
-	for (auto adpt : adapters)
-	{
-		DXGI_ADAPTER_DESC desc = {};
-		adpt->GetDesc(&desc);
-		std::wstring strDesc = desc.Description;
-		if (strDesc.find(L"NVIDIA") != std::string::npos)
-		{
-			pUseAdapter = adpt;
-			break;
-		}
-	}
-
-	D3D_FEATURE_LEVEL featureLevels[] = { D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1, D3D_FEATURE_LEVEL_11_0 };
-	for (auto level : featureLevels)
-	{
-		if (SUCCEEDED(D3D12CreateDevice(pUseAdapter, level, IID_PPV_ARGS(&pDevice))))
-		{
-			break;
-		}
-	}
-	if (pDevice == nullptr)
-	{
-		MSGBOX("DeviceÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-		return false;
-	}
-
-	if (FAILED(pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&pCommandAllocator))))
-	{
-		MSGBOX("CommandAllocatorÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-		return false;
-	}
-
-	if (FAILED(pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, pCommandAllocator, nullptr, IID_PPV_ARGS(&pCommandList))))
-	{
-		MSGBOX("CommandListÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-		return false;
-	}
-
-	{
-		D3D12_COMMAND_QUEUE_DESC desc = {};
-		desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		desc.NodeMask = 0;
-		desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-		desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-		if (FAILED(pDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&pCommandQueue))))
-		{
-			MSGBOX("CommandQueueÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-			return false;
-		}
-	}
-
-	{
-		DXGI_SWAP_CHAIN_DESC1 desc = {};
-		desc.Width = WINDOW_WIDTH;
-		desc.Height = WINDOW_HEIGHT;
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.Stereo = false;
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
-		desc.BufferUsage = DXGI_USAGE_BACK_BUFFER;
-		desc.BufferCount = 2;
-		desc.Scaling = DXGI_SCALING_STRETCH;
-		desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-		desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-		desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		if (FAILED(pDxgiFactory->CreateSwapChainForHwnd(pCommandQueue, hWnd, &desc, nullptr, nullptr, (IDXGISwapChain1**)&pSwapChain)))
-		{
-			MSGBOX("SwapChainÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-			return false;
-		}
-	}
-
-	{
-		D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-		desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		desc.NodeMask = 0;
-		desc.NumDescriptors = 2;
-		desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		if (FAILED(pDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&pDescriptorHeap))))
-		{
-			MSGBOX("DescriptorHeapÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-			return false;
-		}
-	}
-
-	{
-		DXGI_SWAP_CHAIN_DESC desc = {};
-		pSwapChain->GetDesc(&desc);
-
-		buffers.resize(desc.BufferCount);
-		auto handle = pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		for (UINT i = 0; i < desc.BufferCount; i++)
-		{
-			pSwapChain->GetBuffer(i, IID_PPV_ARGS(&buffers[i]));
-			pDevice->CreateRenderTargetView(buffers[i], nullptr, handle);
-			handle.ptr += pDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		}
-	}
-
-	if (FAILED(pDevice->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&pFence))))
-	{
-		MSGBOX("FenceÇÃèâä˙âªÇ…é∏îsÇµÇ‹ÇµÇΩ", "Error");
-		return false;
-	}
-	
+{	
 	{
 		D3D12_HEAP_PROPERTIES heapProp = {};
 		heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;
@@ -475,14 +349,6 @@ void ReleaseD3DX()
 	RELEASE_SAFE(pVertexShader);
 	RELEASE_SAFE(pIndexBuffer);
 	RELEASE_SAFE(pVertexBuffer);
-	RELEASE_SAFE(pFence);
-	RELEASE_SAFE(pDescriptorHeap);
-	RELEASE_SAFE(pSwapChain);
-	RELEASE_SAFE(pCommandQueue);
-	RELEASE_SAFE(pCommandList);
-	RELEASE_SAFE(pCommandAllocator);
-	RELEASE_SAFE(pDxgiFactory);
-	RELEASE_SAFE(pDevice);
 }
 
 LRESULT WindowProc(HWND, UINT, WPARAM, LPARAM);

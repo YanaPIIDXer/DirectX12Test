@@ -142,6 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DirectXCore\DirectXCore.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +165,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="imgs\Anpan.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DirectXCore\DirectXCore.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
