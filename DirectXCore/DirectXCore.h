@@ -35,6 +35,9 @@ private:
 	ID3D12DescriptorHeap* pDescriptorHeap;
 	ID3D12Fence* pFence;
 	UINT64 fenceValue;
+
+	// èâä˙âª
+	bool init(HWND hWnd, int windowWidth, int windowHeight);
 };
 
 #endif		// #ifndef DIRECTXCORE_H

@@ -30,6 +30,36 @@ DirectXCore::~DirectXCore()
 // èâä˙âª
 bool DirectXCore::Initialize(HWND hWnd, int windowWidth, int windowHeight)
 {
+	if (!init(hWnd, windowWidth, windowHeight))
+	{
+		Release();
+		return false;
+	}
+	return true;
+}
+
+// âï˙
+void DirectXCore::Release()
+{
+	RELEASE_SAFE(pFence);
+	RELEASE_SAFE(pDescriptorHeap);
+	for (auto pBuffer : buffers)
+	{
+		RELEASE_SAFE(pBuffer);
+	}
+	RELEASE_SAFE(pSwapChain);
+	RELEASE_SAFE(pCommandQueue);
+	RELEASE_SAFE(pCommandList);
+	RELEASE_SAFE(pCommandAllocator);
+	RELEASE_SAFE(pDxgiFactory);
+	RELEASE_SAFE(pDevice);
+}
+
+
+// èâä˙âª
+bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight)
+{
+
 	if (FAILED(CreateDXGIFactory1(IID_PPV_ARGS(&pDxgiFactory))))
 	{
 		MSGBOX("DXGIFactoryÇÃê∂ê¨Ç…é∏îsÇµÇ‹ÇµÇΩ", "Error");
@@ -148,21 +178,4 @@ bool DirectXCore::Initialize(HWND hWnd, int windowWidth, int windowHeight)
 	}
 
 	return true;
-}
-
-// âï˙
-void DirectXCore::Release()
-{
-	RELEASE_SAFE(pFence);
-	RELEASE_SAFE(pDescriptorHeap);
-	for (auto pBuffer : buffers)
-	{
-		RELEASE_SAFE(pBuffer);
-	}
-	RELEASE_SAFE(pSwapChain);
-	RELEASE_SAFE(pCommandQueue);
-	RELEASE_SAFE(pCommandList);
-	RELEASE_SAFE(pCommandAllocator);
-	RELEASE_SAFE(pDxgiFactory);
-	RELEASE_SAFE(pDevice);
 }
