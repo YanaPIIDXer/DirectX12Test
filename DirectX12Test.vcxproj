@@ -144,7 +144,7 @@
   <ItemGroup>
     <ClCompile Include="GameFramework\Actor.cpp" />
     <ClCompile Include="DirectXCore\DirectXCore.cpp" />
-    <ClCompile Include="DirectXCore\Scene.cpp" />
+    <ClCompile Include="GameFramework\Scene.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -171,8 +171,8 @@
   <ItemGroup>
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="DirectXCore\DirectXCore.h" />
-    <ClInclude Include="DirectXCore\Renderable.h" />
-    <ClInclude Include="DirectXCore\Scene.h" />
+    <ClInclude Include="GameFramework\Renderable.h" />
+    <ClInclude Include="GameFramework\Scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
