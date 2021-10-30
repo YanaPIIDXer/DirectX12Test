@@ -1,6 +1,5 @@
 #include "Actor.h"
 #include "Scene.h"
-#include "Component.h"
 
 // コンストラクタ
 Actor::Actor(Scene* pInScene)
@@ -18,7 +17,7 @@ Actor::~Actor()
 // 更新
 void Actor::Update()
 {
-	for (auto* pComponent : components)
+	for (auto pComponent : components)
 	{
 		pComponent->Update();
 	}

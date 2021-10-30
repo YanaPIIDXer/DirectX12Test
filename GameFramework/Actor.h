@@ -2,9 +2,10 @@
 #define ACTOR_H
 
 #include <vector>
+#include <memory>
+#include "Component.h"
 
 class Scene;
-class Component;
 
 // アクタークラス
 class Actor
@@ -24,7 +25,7 @@ protected:
 	// コンポーネント追加
 	void AddComponent(Component* pComponent)
 	{
-		components.push_back(pComponent);
+		components.push_back(std::shared_ptr<Component>(pComponent));
 	}
 
 	// 更新
@@ -36,7 +37,7 @@ private:
 	Scene* pScene;
 
 	// コンポーネントリスト
-	std::vector<Component*> components;
+	std::vector<std::shared_ptr<Component>> components;
 };
 
 #endif		// #ifndef ACTOR_H
