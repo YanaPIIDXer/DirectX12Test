@@ -41,5 +41,8 @@
     <ClInclude Include="DirectXCore\Scene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="DirectXCore\Renderable.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

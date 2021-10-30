@@ -169,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DirectXCore\DirectXCore.h" />
+    <ClInclude Include="DirectXCore\Renderable.h" />
     <ClInclude Include="DirectXCore\Scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
