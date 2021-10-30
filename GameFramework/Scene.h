@@ -19,6 +19,9 @@ public:
 	// デストラクタ
 	virtual ~Scene() = 0;
 
+	// 初期化
+	virtual void Initialize(ID3D12Device* pDevice) {}
+
 	// 毎フレームの処理
 	void Tick();
 

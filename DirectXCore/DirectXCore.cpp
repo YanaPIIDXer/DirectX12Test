@@ -200,6 +200,7 @@ bool DirectXCore::init(HWND hWnd, int windowWidth, int windowHeight, Scene* pIni
 	scissorRect.bottom = scissorRect.top + windowHeight;
 
 	pCurrentScene.reset(pInitialScene);
+	pCurrentScene->Initialize(pDevice);
 
 	return true;
 }
