@@ -145,6 +145,7 @@
     <ClCompile Include="GameFramework\Component.cpp" />
     <ClCompile Include="GameFramework\Actor.cpp" />
     <ClCompile Include="DirectXCore\DirectXCore.cpp" />
+    <ClCompile Include="GameFramework\RenderComponent.cpp" />
     <ClCompile Include="GameFramework\Scene.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -173,6 +174,7 @@
     <ClInclude Include="GameFramework\Component.h" />
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="DirectXCore\DirectXCore.h" />
+    <ClInclude Include="GameFramework\RenderComponent.h" />
     <ClInclude Include="GameFramework\Scene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
