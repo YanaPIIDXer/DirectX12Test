@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include "Scene.h"
+#include "Component.h"
 
 // コンストラクタ
 Actor::Actor(Scene* pInScene)
@@ -12,4 +13,14 @@ Actor::Actor(Scene* pInScene)
 Actor::~Actor()
 {
 	pScene->RemoveActor(this);
+}
+
+// 更新
+void Actor::Update()
+{
+	for (auto* pComponent : components)
+	{
+		pComponent->Update();
+	}
+	Tick();
 }
