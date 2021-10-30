@@ -142,6 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameFramework\Component.cpp" />
     <ClCompile Include="GameFramework\Actor.cpp" />
     <ClCompile Include="DirectXCore\DirectXCore.cpp" />
     <ClCompile Include="GameFramework\Scene.cpp" />
@@ -169,6 +170,7 @@
     <Image Include="imgs\Anpan.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameFramework\Component.h" />
     <ClInclude Include="GameFramework\Actor.h" />
     <ClInclude Include="DirectXCore\DirectXCore.h" />
     <ClInclude Include="GameFramework\Scene.h" />
