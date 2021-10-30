@@ -33,11 +33,6 @@ public:
 	// アクターを消去
 	void RemoveActor(Actor* pActor);
 
-protected:
-
-	// 更新処理
-	virtual void Update() = 0;
-
 private:
 
 	// アクターリスト

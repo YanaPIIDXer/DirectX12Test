@@ -14,7 +14,10 @@ Scene::~Scene()
 // 毎フレームの処理
 void Scene::Tick()
 {
-	Update();
+	for (auto pActor : actors)
+	{
+		pActor->Update();
+	}
 }
 
 // アクターを削除
