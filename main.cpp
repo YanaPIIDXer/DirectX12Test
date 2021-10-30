@@ -7,9 +7,7 @@
 #include <d3dcompiler.h>
 #include <string>
 #include <time.h>
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "d3dcompiler.lib")
+#include <DirectXTex.h>
 
 using namespace DirectX;
 
