@@ -58,11 +58,6 @@ ID3DBlob* pPixelShader = nullptr;
 ID3D12RootSignature* pRootSignature = nullptr;
 ID3D12PipelineState* pPipelineState = nullptr;
 
-struct PixelColor
-{
-	unsigned char R, G, B, A;
-};
-std::vector<PixelColor> texData(256 * 256);
 ID3D12Resource* pTextureBuffer = nullptr;
 ID3D12DescriptorHeap* pTextureDescHeap = nullptr;
 
@@ -344,13 +339,15 @@ bool InitD3DX(HWND hWnd)
 	scissorRect.bottom = scissorRect.top + WINDOW_HEIGHT;
 
 	{
-		for (auto& color : texData)
+		TexMetadata metadata = {};
+		ScratchImage scratchImg = {};
+		if (FAILED(LoadFromWICFile(L"imgs/Anpan.jpg", WIC_FLAGS_NONE, &metadata, scratchImg)))
 		{
-			color.R = rand() % 256;
-			color.G = rand() % 256;
-			color.B = rand() % 256;
-			color.A = 255;
+			MSGBOX("テクスチャの読み込みに失敗しました", "Error");
+			return false;
 		}
+
+		auto pImg = scratchImg.GetImage(0, 0, 0);
 
 		D3D12_HEAP_PROPERTIES heapProp = {};
 		heapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -360,19 +357,19 @@ bool InitD3DX(HWND hWnd)
 		heapProp.VisibleNodeMask = 0;
 
 		D3D12_RESOURCE_DESC desc = {};
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-		desc.Width = 256;
-		desc.Height = 256;
-		desc.DepthOrArraySize = 1;
+		desc.Format = metadata.format;
+		desc.Width = metadata.width;
+		desc.Height = metadata.height;
+		desc.DepthOrArraySize = metadata.arraySize;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
-		desc.MipLevels = 1;
-		desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		desc.MipLevels = metadata.mipLevels;
+		desc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
 		desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		desc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
 		if (FAILED(pDevice->CreateCommittedResource(&heapProp, D3D12_HEAP_FLAG_NONE, &desc, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, nullptr, IID_PPV_ARGS(&pTextureBuffer))) ||
-			FAILED(pTextureBuffer->WriteToSubresource(0, nullptr, texData.data(), sizeof(PixelColor) * 256, sizeof(PixelColor) * texData.size())))
+			FAILED(pTextureBuffer->WriteToSubresource(0, nullptr, pImg->pixels, pImg->rowPitch, pImg->slicePitch)))
 		{
 			MSGBOX("TextureBufferの生成に失敗しました", "Error");
 			return false;
